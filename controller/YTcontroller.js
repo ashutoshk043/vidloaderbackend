@@ -3,41 +3,40 @@ const fs = require("fs");
 
 const downloadYoutubeVideo = async (req, res) => {
   const videoUrl = req.body.videoUrl;
-
   const outputDir = "./downloads";
 
-  // Ensure the output directory exists
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir);
-  }
+  try {
+    // Ensure the output directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
 
-  const options = {
-    quality: 'highest',
-  };
+    const options = {
+      quality: 'highest',
+    };
 
-  ytdl.getInfo(videoUrl, (err, info) => {
-    if (err) throw err;
-  
-    const videoTitle = info.videoDetails.title;
+    const videoInfo = await ytdl.getInfo(videoUrl);
+    const videoTitle = videoInfo.videoDetails.title;
     const outputFilePath = `${outputDir}/${videoTitle}.mp4`;
 
-    console.log(videoTitle, outputFilePath)
-  
-    // Download the video
+    console.log(videoTitle, outputFilePath);
+
     const videoStream = ytdl(videoUrl, options);
-  
     videoStream.pipe(fs.createWriteStream(outputFilePath));
-  
+
     videoStream.on('end', () => {
       console.log(`Video downloaded to ${outputFilePath}`);
+      res.status(200).json({ status: true, message: 'Video downloaded successfully' });
     });
-  
+
     videoStream.on('error', (err) => {
       console.error('Error downloading video:', err);
+      res.status(500).json({ status: false, message: 'Error downloading video' });
     });
-  });  
-
-  res.send({ status: true, message: req.body });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ status: false, message: 'Internal server error' });
+  }
 };
 
 module.exports = { downloadYoutubeVideo };
