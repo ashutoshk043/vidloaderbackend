@@ -22,15 +22,11 @@ const getVideoDetails = async (req, res) => {
           const videoThumbnail = info.videoDetails.thumbnails[0].url;
           const videoFormats = info.formats;
   
-          // console.log(videoFormats, "videoFormats")
-  
           for(let format of videoFormats){
             if(!videoQualities.includes(format.qualityLabel) && format.qualityLabel != null){
-              videoQualities.push({qualityLabel:format.qualityLabel, quality:format.itag})
+              videoQualities.push({qualityLabel:format.qualityLabel, quality:format.itag, url:format.url})
             }
           }
-  
-          videoQualities.sort()
   
           const data = {
             "videoTitle":videoTitle,
